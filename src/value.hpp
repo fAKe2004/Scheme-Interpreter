@@ -1,36 +1,37 @@
-#ifndef VALUE 
+#ifndef VALUE
 #define VALUE
 
-#include "Def.hpp"
-#include "shared.hpp"
-#include "expr.hpp"
-#include <memory>
 #include <cstring>
+#include <memory>
 #include <vector>
 
+#include "Def.hpp"
+#include "expr.hpp"
+#include "shared.hpp"
+
 struct ValueBase {
-    ValueType v_type;
-    ValueBase(ValueType);
-    virtual void show(std::ostream &) = 0;
-    virtual void showCdr(std::ostream &);
-    virtual ~ValueBase() = default;
+  ValueType v_type;
+  ValueBase(ValueType);
+  virtual void show(std::ostream &) = 0;
+  virtual void showCdr(std::ostream &);
+  virtual ~ValueBase() = default;
 };
 
 struct Value {
-    SharedPtr<ValueBase> ptr;
-    Value(ValueBase *);
-    void show(std::ostream &);
-    ValueBase* operator -> () const;
-    ValueBase& operator * ();
-    ValueBase* get() const;
+  SharedPtr<ValueBase> ptr;
+  Value(ValueBase *);
+  void show(std::ostream &);
+  ValueBase *operator->() const;
+  ValueBase &operator*();
+  ValueBase *get() const;
 };
 
 struct Assoc {
   SharedPtr<AssocList> ptr;
   Assoc(AssocList *);
-  AssocList* operator -> () const;
-  AssocList& operator * ();
-  AssocList* get() const;
+  AssocList *operator->() const;
+  AssocList &operator*();
+  AssocList *get() const;
 };
 
 struct AssocList {
@@ -98,18 +99,17 @@ struct Closure : ValueBase {
 };
 Value ClosureV(const std::vector<std::string> &, const Expr &, const Assoc &);
 
-struct String : ValueBase 
-{
-    std :: string s;
-    String(const std :: string &);
-    virtual void show(std :: ostream &) override;
+struct String : ValueBase {
+  std ::string s;
+  String(const std ::string &);
+  virtual void show(std ::ostream &) override;
 };
-Value StringV(const std :: string &);
+Value StringV(const std ::string &);
 
 std::ostream &operator<<(std::ostream &, Value &);
 
 Assoc empty();
-Assoc extend(const std :: string&, const Value &, Assoc &);
-void modify(const std :: string&, const Value &, Assoc &);
+Assoc extend(const std ::string &, const Value &, Assoc &);
+void modify(const std ::string &, const Value &, Assoc &);
 Value find(const std::string &, Assoc &);
 #endif

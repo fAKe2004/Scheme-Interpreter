@@ -1,60 +1,60 @@
 #ifndef EXPRESSION
 #define EXPRESSION
 
-#include "Def.hpp"
-#include "syntax.hpp"
-#include "shared.hpp"
-#include <memory>
 #include <cstring>
+#include <memory>
 #include <vector>
 
-struct ExprBase
-{
-    ExprType e_type;
-    ExprBase(ExprType);
-    virtual Value eval(Assoc &) = 0;
-    virtual ~ExprBase() = default;
+#include "Def.hpp"
+#include "shared.hpp"
+#include "syntax.hpp"
+
+struct ExprBase {
+  ExprType e_type;
+  ExprBase(ExprType);
+  virtual Value eval(Assoc &) = 0;
+  virtual ~ExprBase() = default;
 };
 
 struct Expr {
-    SharedPtr<ExprBase> ptr;
-    Expr(ExprBase *);
-    ExprBase* operator -> () const;
-    ExprBase& operator * ();
-    ExprBase* get() const;
+  SharedPtr<ExprBase> ptr;
+  Expr(ExprBase *);
+  ExprBase *operator->() const;
+  ExprBase &operator*();
+  ExprBase *get() const;
 };
 
 struct Let : ExprBase {
-    std::vector<std::pair<std::string, Expr>> bind;
-    Expr body;
-    Let(const std :: vector<std :: pair<std :: string, Expr>> &, const Expr &);
-    virtual Value eval(Assoc &) override;
+  std::vector<std::pair<std::string, Expr>> bind;
+  Expr body;
+  Let(const std ::vector<std ::pair<std ::string, Expr>> &, const Expr &);
+  virtual Value eval(Assoc &) override;
 };
 
 struct Lambda : ExprBase {
-    std::vector<std::string> x;
-    Expr e;
-    Lambda(const std :: vector<std :: string> &, const Expr &);
-    virtual Value eval(Assoc &) override;
+  std::vector<std::string> x;
+  Expr e;
+  Lambda(const std ::vector<std ::string> &, const Expr &);
+  virtual Value eval(Assoc &) override;
 };
 
 struct Apply : ExprBase {
-    Expr rator;
-    std::vector<Expr> rand;
-    Apply(const Expr &, const std :: vector<Expr> &);
-    virtual Value eval(Assoc &) override;
+  Expr rator;
+  std::vector<Expr> rand;
+  Apply(const Expr &, const std ::vector<Expr> &);
+  virtual Value eval(Assoc &) override;
 };
 
 struct Letrec : ExprBase {
   std::vector<std::pair<std::string, Expr>> bind;
   Expr body;
-  Letrec(const std :: vector<std :: pair<std :: string, Expr>> &, const Expr &);
+  Letrec(const std ::vector<std ::pair<std ::string, Expr>> &, const Expr &);
   virtual Value eval(Assoc &) override;
 };
 
 struct Var : ExprBase {
   std::string x;
-  Var(const std :: string &);
+  Var(const std ::string &);
   virtual Value eval(Assoc &) override;
 };
 
@@ -84,7 +84,7 @@ struct False : ExprBase {
 
 struct Begin : ExprBase {
   std::vector<Expr> es;
-  Begin(const std :: vector<Expr> &);
+  Begin(const std ::vector<Expr> &);
   virtual Value eval(Assoc &) override;
 };
 
@@ -95,118 +95,118 @@ struct Quote : ExprBase {
 };
 
 struct MakeVoid : ExprBase {
-    MakeVoid();
-    virtual Value eval(Assoc &) override;
+  MakeVoid();
+  virtual Value eval(Assoc &) override;
 };
 
 struct Exit : ExprBase {
-    Exit();
-    virtual Value eval(Assoc &) override;
+  Exit();
+  virtual Value eval(Assoc &) override;
 };
 
 struct Binary : ExprBase {
-    Expr rand1;
-    Expr rand2;
-    Binary(ExprType, const Expr &, const Expr &);
-    virtual Value evalRator(const Value &, const Value &) = 0;
-    virtual Value eval(Assoc &) override;
+  Expr rand1;
+  Expr rand2;
+  Binary(ExprType, const Expr &, const Expr &);
+  virtual Value evalRator(const Value &, const Value &) = 0;
+  virtual Value eval(Assoc &) override;
 };
 
 struct Unary : ExprBase {
-    Expr rand;
-    Unary(ExprType, const Expr &);
-    virtual Value evalRator(const Value &) = 0;
-    virtual Value eval(Assoc &) override;
+  Expr rand;
+  Unary(ExprType, const Expr &);
+  virtual Value evalRator(const Value &) = 0;
+  virtual Value eval(Assoc &) override;
 };
 
 struct Mult : Binary {
-    Mult(const Expr &, const Expr &);
-    virtual Value evalRator(const Value &, const Value &) override;
+  Mult(const Expr &, const Expr &);
+  virtual Value evalRator(const Value &, const Value &) override;
 };
 
 struct Plus : Binary {
-    Plus(const Expr &, const Expr &);
-    virtual Value evalRator(const Value &, const Value &) override;
+  Plus(const Expr &, const Expr &);
+  virtual Value evalRator(const Value &, const Value &) override;
 };
 
 struct Minus : Binary {
-    Minus(const Expr &, const Expr &);
-    virtual Value evalRator(const Value &, const Value &) override;
+  Minus(const Expr &, const Expr &);
+  virtual Value evalRator(const Value &, const Value &) override;
 };
 
 struct Less : Binary {
-    Less(const Expr &, const Expr &);
-    virtual Value evalRator(const Value &, const Value &) override;
+  Less(const Expr &, const Expr &);
+  virtual Value evalRator(const Value &, const Value &) override;
 };
 
 struct LessEq : Binary {
-    LessEq(const Expr &, const Expr &);
-    virtual Value evalRator(const Value &, const Value &) override;
+  LessEq(const Expr &, const Expr &);
+  virtual Value evalRator(const Value &, const Value &) override;
 };
 
 struct Equal : Binary {
-    Equal(const Expr &, const Expr &);
-    virtual Value evalRator(const Value &, const Value &) override;
+  Equal(const Expr &, const Expr &);
+  virtual Value evalRator(const Value &, const Value &) override;
 };
 
 struct GreaterEq : Binary {
-    GreaterEq(const Expr &, const Expr &);
-    virtual Value evalRator(const Value &, const Value &) override;
+  GreaterEq(const Expr &, const Expr &);
+  virtual Value evalRator(const Value &, const Value &) override;
 };
 
 struct Greater : Binary {
-    Greater(const Expr &, const Expr &);
-    virtual Value evalRator(const Value &, const Value &) override;
+  Greater(const Expr &, const Expr &);
+  virtual Value evalRator(const Value &, const Value &) override;
 };
 
 struct IsEq : Binary {
-    IsEq(const Expr &, const Expr &);
-    virtual Value evalRator(const Value &, const Value &) override;
+  IsEq(const Expr &, const Expr &);
+  virtual Value evalRator(const Value &, const Value &) override;
 };
 
 struct Cons : Binary {
-    Cons(const Expr &, const Expr &);
-    virtual Value evalRator(const Value &, const Value &) override;
+  Cons(const Expr &, const Expr &);
+  virtual Value evalRator(const Value &, const Value &) override;
 };
 
 struct IsBoolean : Unary {
-    IsBoolean(const Expr &);
-    virtual Value evalRator(const Value &) override;
+  IsBoolean(const Expr &);
+  virtual Value evalRator(const Value &) override;
 };
 
 struct IsFixnum : Unary {
-    IsFixnum(const Expr &);
-    virtual Value evalRator(const Value &) override;
+  IsFixnum(const Expr &);
+  virtual Value evalRator(const Value &) override;
 };
 
 struct IsNull : Unary {
-    IsNull(const Expr &);
-    virtual Value evalRator(const Value &) override;
+  IsNull(const Expr &);
+  virtual Value evalRator(const Value &) override;
 };
 
 struct IsPair : Unary {
-    IsPair(const Expr &);
-    virtual Value evalRator(const Value &) override;
+  IsPair(const Expr &);
+  virtual Value evalRator(const Value &) override;
 };
 
 struct IsProcedure : Unary {
-    IsProcedure(const Expr &);
-    virtual Value evalRator(const Value &) override;
+  IsProcedure(const Expr &);
+  virtual Value evalRator(const Value &) override;
 };
 
 struct Not : Unary {
-    Not(const Expr &);
-    virtual Value evalRator(const Value &) override;
+  Not(const Expr &);
+  virtual Value evalRator(const Value &) override;
 };
 
 struct Car : Unary {
-    Car(const Expr &);
-    virtual Value evalRator(const Value &) override;
+  Car(const Expr &);
+  virtual Value evalRator(const Value &) override;
 };
 
 struct Cdr : Unary {
-    Cdr(const Expr &);
-    virtual Value evalRator(const Value &) override;
+  Cdr(const Expr &);
+  virtual Value evalRator(const Value &) override;
 };
 
 #endif
