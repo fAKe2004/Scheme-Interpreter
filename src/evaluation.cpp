@@ -1,14 +1,15 @@
-#include "Def.hpp"
-#include "value.hpp"
-#include "expr.hpp"
-#include "RE.hpp"
-#include "syntax.hpp"
 #include <cstring>
-#include <vector>
 #include <map>
+#include <vector>
 
-extern std :: map<std :: string, ExprType> primitives;
-extern std :: map<std :: string, ExprType> reserved_words;
+#include "Def.hpp"
+#include "RE.hpp"
+#include "expr.hpp"
+#include "syntax.hpp"
+#include "value.hpp"
+
+extern std ::map<std ::string, ExprType> primitives;
+extern std ::map<std ::string, ExprType> reserved_words;
 
 Value Let::eval(Assoc &env) {}
 
