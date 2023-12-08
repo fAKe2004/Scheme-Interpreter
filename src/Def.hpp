@@ -49,6 +49,7 @@ enum ExprType {
   E_NULLQ,
   E_PAIRQ,
   E_PROCQ,
+  E_SYMBOLQ, // ADDED SYMBOLQ
   E_EXIT
 };
 enum ValueType {

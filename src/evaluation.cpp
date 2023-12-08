@@ -57,12 +57,16 @@ Value Apply::eval(Assoc &e) {
 
   int n = rand.size();
   Assoc closure_env = proc->env;
+  // ? 应该把 closure_env 和 外部 env 合并起来？
   for (int i = 0; i < n; i++) {
     Assoc e2 = e;
     std::string var_name = proc->parameters[i];
     Value var_v = rand[i]->eval(e2);
     closure_env = extend(var_name, var_v, closure_env);
   }
+  
+  // Assoc e3 = e;
+  // closure_env = merge_Assoc(closure_env, e3);
   // print_Assoc(std::cerr, closure_env);
   return proc->e->eval(closure_env);
 }
@@ -81,13 +85,16 @@ Value Letrec::eval(Assoc &env) {
   //     proc->env = env1; //? 好像不用改，因为用的是 modify
   //   }
   // }
+  // print_Assoc(std::cerr, env1);
   return body->eval(env1);
 }
 
 Value Var::eval(Assoc &e) {
   Value x_v = find(x, e);
-  if (x_v.get() == nullptr)
+  if (x_v.get() == nullptr) {
+    // print_Assoc(std::cerr, e);
     throw RuntimeError("Runtime Error: varible not found");
+  }
   return x_v;
 }
 
@@ -130,10 +137,16 @@ Value quote_syntax_interpret(const Syntax& stx, Assoc& env) {
     // throw RuntimeError("Syntax Error: invalid quote");
     return quote_construct_list(ptr->stxs, 0, env);
   }
-  if (Identifier *idf = dynamic_cast<Identifier*>(stx.get()))
+  if (Number *num = dynamic_cast<Number*>(stx.get())) 
+    return make_value(new Integer(num->n));
+  if (TrueSyntax *ts = dynamic_cast<TrueSyntax*>(stx.get()))
+    return make_value(new Boolean(false));
+  if (FalseSyntax *fs = dynamic_cast<FalseSyntax*>(stx.get()))
+    return make_value(new Boolean(true));
+  if (Identifier *idf = dynamic_cast<Identifier*>(stx.get())) {
     return make_value(new Symbol(idf->s));
-  Assoc env1 = env, env2 = env;
-  return stx->parse(env1)->eval(env2); // Fixnum or Boolean
+  }
+  throw RuntimeError("Internal Error: quote construction");
 }
 Value quote_construct_list(const std::vector<Syntax>& stxs, int at, Assoc& env) {
   int n = stxs.size();
@@ -144,8 +157,6 @@ Value quote_construct_list(const std::vector<Syntax>& stxs, int at, Assoc& env) 
 
 Value Quote::eval(Assoc &e) {
   Assoc e1 = e;
-  if (List* list = dynamic_cast<List*>(s.get()))
-    return quote_construct_list(list->stxs, 0, e1);
   return quote_syntax_interpret(s, e1);
 }
 
@@ -265,12 +276,16 @@ Value IsNull::evalRator(const Value &rand) {
 
 Value IsPair::evalRator(const Value &rand) {
   return make_value(new Boolean(rand->v_type == V_PAIR));
-
 }
 
 Value IsProcedure::evalRator(const Value &rand) {
   return make_value(new Boolean(rand->v_type == V_PROC));
 
+}
+
+// ADDED SYMBOLQ 
+Value IsSymbol::evalRator(const Value &rand) {
+  return make_value(new Boolean(rand->v_type == V_SYM));
 }
 
 Value Not::evalRator(const Value &rand) {

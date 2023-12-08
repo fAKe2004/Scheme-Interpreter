@@ -81,6 +81,8 @@ IsPair::IsPair(const Expr &r1) : Unary(E_PAIRQ, r1) {}
 
 IsProcedure::IsProcedure(const Expr &r1) : Unary(E_PROCQ, r1) {}
 
+IsSymbol::IsSymbol(const Expr &r1) : Unary(E_SYMBOLQ, r1) {} // ADDED SYMBOLQ 
+
 Not::Not(const Expr &r1) : Unary(E_NOT, r1) {}
 
 Car::Car(const Expr &r1) : Unary(E_CAR, r1) {}

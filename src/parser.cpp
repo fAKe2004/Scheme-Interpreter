@@ -19,6 +19,9 @@
 
 #include "value.hpp"
 
+Value env_place_holder = IntegerV(1);
+// END OF ADDED
+
 #define mp make_pair
 using std::pair;
 using std::string;
@@ -53,7 +56,7 @@ void var_cast(const Syntax &stx, Assoc &env) {
   Identifier *stx_ptr = dynamic_cast<Identifier *>(stx.get());
   if (stx_ptr == nullptr || !var_name_check(stx_ptr->s))
     throw RuntimeError("Syntax Error: invaild varible");
-  env = extend(stx_ptr->s, IntegerV(1), env);
+  env = extend(stx_ptr->s, env_place_holder, env);
   // return make_expr(new Var(stx_ptr->s));
   return void();
 }
@@ -65,12 +68,12 @@ Expr Syntax::parse(Assoc &env) { return ptr->parse(env); }
 Expr Number::parse(Assoc &env) { return make_expr(new Fixnum(this->n)); }
 
 Expr Identifier::parse(Assoc &env) {
-  if (s == "#t")
-    return make_expr(new True());
-  if (s == "#f")
-    return make_expr(new False());
+  // if (s == "#t")
+  //   return make_expr(new True());
+  // if (s == "#f")
+  //   return make_expr(new False());
 
-  if (find(s, env).get() != nullptr)  // existing var .. 好像不能这么判断，咋整，因为找不到和没赋值的变量都是 nullptr 规定存在但为求值得变量为 Int 1 吧，反正 parse 阶段 env 值也不重要
+  if (find(s, env).get() != nullptr)  // existing var .. 好像不能这么判断，咋整，因为找不到和没赋值的变量都是 nullptr 规定存在但为求值得变量为 env_place_holder 吧，反正 parse 阶段 env 值也不重要
     return make_expr(new Var(s));
 
   if (primitives.find(s) != primitives.end())  // primitives
@@ -83,7 +86,7 @@ Expr Identifier::parse(Assoc &env) {
   if (!var_name_check(s))
     throw RuntimeError("Syntax Error: invalid varible");
 
-  env = extend(s, IntegerV(1), env);  // new var
+  env = extend(s, env_place_holder, env);  // new var
   return make_expr(new Var(s));
 }
 
@@ -98,6 +101,9 @@ Expr List::parse(Assoc &env) {
   Expr front = stxs.front().parse(env0);
   int n = stxs.size();
 
+  if (typeid(*front) != typeid(ExprBase)) // 如果不是 ExprBase 类，说明这个 List 实际上不是关键字解析，应该认定为 function call
+    goto parse_function_call_lab;
+
   switch (front->e_type) { 
     /*
     有一个小问题，这里判断 front 的 type 的时候，需要判断 front 是不是真的是抽象类 ExprBase。
@@ -107,6 +113,9 @@ Expr List::parse(Assoc &env) {
 
     解决方法是... 给 lambda, let, letrec, if, begin 判断一下是不是 ExprBase 类。
     如果是，说明这一列真的是要解析的，不然就是 function call
+
+    Update 似乎其它类型(比如 cdr) 也有这个问题...那我最好直接判断是不是指向基类。
+    用 typeid 判断吧，如果不是 Base, 直接 jump 到 function call 解析。
     */
     
     // Primitives
@@ -214,6 +223,14 @@ Expr List::parse(Assoc &env) {
       return make_expr(new IsProcedure(expr));
     }
 
+    // ADDED symbol?
+    case E_SYMBOLQ: {
+      if (n != 2) throw RuntimeError("Syntax Error: List::parse wrong number of args");
+      Assoc env1 = env0;
+      Expr expr = stxs[1].parse(env1);
+      return make_expr(new IsSymbol(expr));
+    }
+
     case E_CONS: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
       Assoc env1 = env0, env2 = env0;
@@ -249,8 +266,10 @@ Expr List::parse(Assoc &env) {
 
     // Reserved Words // Hard Part
     case E_LET: {
+      /*
       if (dynamic_cast<Let*>(front.get()) != nullptr)
         break; // function call, not real let
+      */
 
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
       
@@ -277,8 +296,10 @@ Expr List::parse(Assoc &env) {
     }
 
     case E_LAMBDA: {
+      /*
       if (dynamic_cast<Lambda*>(front.get()) != nullptr)
         break;
+      */
 
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
       
@@ -299,8 +320,10 @@ Expr List::parse(Assoc &env) {
     }
 
     case E_LETREC: { 
+      /*
       if (dynamic_cast<Letrec*>(front.get()) != nullptr)
         break;
+      */
 
       // 把获取变量和变量对应的 expr 解析分开就行
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
@@ -332,8 +355,10 @@ Expr List::parse(Assoc &env) {
     }
 
     case E_IF: {
+      /*
       if (dynamic_cast<If*>(front.get()) != nullptr)
         break;
+      */
 
       if (n != 4) throw RuntimeError("Syntax Error: List::parse wrong number of args");
       Assoc env1 = env0, env2 = env0, env3 = env0;
@@ -343,8 +368,10 @@ Expr List::parse(Assoc &env) {
     }
 
     case E_BEGIN: {
+      /*
       if (dynamic_cast<Begin*>(front.get()) != nullptr)
         break;
+      */
 
       if (n < 2) throw RuntimeError("Syntax Error: List::parse wrong number of args");
 
@@ -375,6 +402,7 @@ Expr List::parse(Assoc &env) {
   
   // 还是不能这么判...有接受 0 个参数求值的情况，要不全部解释成 Apply 去 Apply 里面判断是不是常量？
   // 没事了... 只要在一般 List 里面就默认解释位 function call，比如 (1) 是不合法的。
+ parse_function_call_lab:
 
   // interpret as procedure call, leave type check for later
   Expr rator = front;

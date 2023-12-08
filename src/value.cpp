@@ -36,6 +36,14 @@ void print_Assoc(std::ostream& os, Assoc& l) {
     os << i->x << "\n";
   os << "End of Assoc\n";
 }
+
+// merge l1 to the head of l2, l1 has higher priority (l1, l2 are not changed)
+Assoc merge_Assoc(Assoc& l1, Assoc& l2) { 
+  Assoc env = l2;
+  for (auto i = l1; i.get() != nullptr; i = i->next)
+    env = extend(i->x, i->v, env);
+  return env;
+}
 // end of function
 
 std::ostream &operator<<(std::ostream &os, Value &v) {
