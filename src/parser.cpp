@@ -122,56 +122,56 @@ Expr List::parse(Assoc &env) {
 
     case E_MUL: {  // Remark: Expr 类型检查留给 EVAL 吧，好写点。
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0, env2 = env0;
+      Assoc env1 = env, env2 = env;
       Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
       return make_expr(new Mult(first, second));
     }
 
     case E_MINUS: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0, env2 = env0;
+      Assoc env1 = env, env2 = env;
       Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
       return make_expr(new Minus(first, second));
     }
 
     case E_PLUS: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0, env2 = env0;
+      Assoc env1 = env, env2 = env;
       Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
       return make_expr(new Plus(first, second));
     }
 
     case E_LT: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0, env2 = env0;
+      Assoc env1 = env, env2 = env;
       Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
       return make_expr(new Less(first, second));
     }
 
     case E_LE: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0, env2 = env0;
+      Assoc env1 = env, env2 = env;
       Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
       return make_expr(new LessEq(first, second));
     }
 
     case E_EQ: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0, env2 = env0;
+      Assoc env1 = env, env2 = env;
       Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
       return make_expr(new Equal(first, second));
     }
 
     case E_GE: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0, env2 = env0;
+      Assoc env1 = env, env2 = env;
       Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
       return make_expr(new GreaterEq(first, second));
     }
 
     case E_GT: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0, env2 = env0;
+      Assoc env1 = env, env2 = env;
       Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
       return make_expr(new Greater(first, second));
     }
@@ -183,42 +183,42 @@ Expr List::parse(Assoc &env) {
 
     case E_EQQ: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0, env2 = env0;
+      Assoc env1 = env, env2 = env;
       Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
       return make_expr(new IsEq(first, second));
     }
 
     case E_BOOLQ: {
       if (n != 2) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0;
+      Assoc env1 = env;
       Expr expr = stxs[1].parse(env1);
       return make_expr(new IsBoolean(expr));
     }
 
     case E_INTQ: {
       if (n != 2) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0;
+      Assoc env1 = env;
       Expr expr = stxs[1].parse(env1);
       return make_expr(new IsFixnum(expr));
     }
 
     case E_NULLQ: {
       if (n != 2) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0;
+      Assoc env1 = env;
       Expr expr = stxs[1].parse(env1);
       return make_expr(new IsNull(expr));
     }
 
     case E_PAIRQ: {
       if (n != 2) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0;
+      Assoc env1 = env;
       Expr expr = stxs[1].parse(env1);
       return make_expr(new IsPair(expr));
     }
 
     case E_PROCQ: {
       if (n != 2) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0;
+      Assoc env1 = env;
       Expr expr = stxs[1].parse(env1);
       return make_expr(new IsProcedure(expr));
     }
@@ -226,35 +226,35 @@ Expr List::parse(Assoc &env) {
     // ADDED symbol?
     case E_SYMBOLQ: {
       if (n != 2) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0;
+      Assoc env1 = env;
       Expr expr = stxs[1].parse(env1);
       return make_expr(new IsSymbol(expr));
     }
 
     case E_CONS: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0, env2 = env0;
+      Assoc env1 = env, env2 = env;
       Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
       return make_expr(new Cons(first, second));
     }
 
     case E_NOT: {
       if (n != 2) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0;
+      Assoc env1 = env;
       Expr expr = stxs[1].parse(env1);
       return make_expr(new Not(expr));
     }
 
     case E_CAR: {
       if (n != 2) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0;
+      Assoc env1 = env;
       Expr expr = stxs[1].parse(env1);
       return make_expr(new Car(expr));
     }
 
     case E_CDR: {
       if (n != 2) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0;
+      Assoc env1 = env;
       Expr expr = stxs[1].parse(env1);
       return make_expr(new Cdr(expr));
     }
@@ -278,7 +278,7 @@ Expr List::parse(Assoc &env) {
         throw RuntimeError("Syntax Error: let (var*) is not a List ");
 
       std::vector<std::pair<std::string, Expr>> bind;
-      Assoc env1 = env0;
+      Assoc env1 = env;
       for (auto& stx : var_list->stxs) { // parse var*
         List *xy = dynamic_cast<List*>(stx.get());
         if (xy == nullptr || xy->stxs.size() != 2)
@@ -286,7 +286,7 @@ Expr List::parse(Assoc &env) {
         Syntax var_stx = xy->stxs[0], expr_stx = xy->stxs[1];
         var_cast(var_stx, env1); // var_cast guarantees var_stx is a valid var identifier
         std::string var_name = dynamic_cast<Identifier*>(var_stx.get())->s;
-        Assoc env2 = env0;
+        Assoc env2 = env;
         bind.emplace_back(var_name, expr_stx.parse(env2));
       }
       
@@ -308,7 +308,7 @@ Expr List::parse(Assoc &env) {
         throw RuntimeError("Syntax Error: lambda (var*) is not a List");
       
       std::vector<std::string> x;
-      Assoc env1 = env0;
+      Assoc env1 = env;
       for (auto& var_stx : var_list->stxs) {
         var_cast(var_stx, env1);// var_cast guarantees var_stx is a valid var identifier
         std::string var_name = dynamic_cast<Identifier*>(var_stx.get())->s;
@@ -333,7 +333,7 @@ Expr List::parse(Assoc &env) {
         throw RuntimeError("Syntax Error: letrec (var*) is not a List");
 
       std::vector<std::pair<std::string, Expr>> bind;
-      Assoc env1 = env0;
+      Assoc env1 = env;
       for (auto& stx : var_list->stxs) { // parse var* | add var to env only
         List *xy = dynamic_cast<List*>(stx.get());
         if (xy == nullptr || xy->stxs.size() != 2)
@@ -361,7 +361,7 @@ Expr List::parse(Assoc &env) {
       */
 
       if (n != 4) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env0, env2 = env0, env3 = env0;
+      Assoc env1 = env, env2 = env, env3 = env;
       Syntax cond_stx = stxs[1], conseq_stx = stxs[2], alter_stx = stxs[3];
       Expr cond = cond_stx.parse(env1), conseq = conseq_stx.parse(env2), alter = alter_stx.parse(env3);
       return make_expr(new If(cond, conseq, alter));
@@ -378,7 +378,7 @@ Expr List::parse(Assoc &env) {
       std::vector<Expr> es;
       for (int i = 1; i < n; i++) {
         Syntax& stx = stxs[i];
-        Assoc env1 = env0;
+        Assoc env1 = env;
         es.push_back(stx.parse(env1));
       }
 
@@ -408,7 +408,7 @@ Expr List::parse(Assoc &env) {
   Expr rator = front;
   std::vector<Expr> rand;
   for (int i = 1; i < n; i++) {
-    Assoc env1 = env0;
+    Assoc env1 = env;
     rand.push_back(stxs[i]->parse(env1));
   }
   return make_expr(new Apply(rator, rand));
