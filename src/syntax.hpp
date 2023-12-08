@@ -51,7 +51,7 @@ struct Identifier : SyntaxBase {
 };
 
 struct List : SyntaxBase {
-  std ::vector<Syntax> stxs;
+  std::vector<Syntax> stxs;
   List();
   virtual Expr parse(Assoc &) override;
   virtual void show(std::ostream &) override;

@@ -8,24 +8,33 @@
 #include "syntax.hpp"
 #include "value.hpp"
 
-extern std ::map<std ::string, ExprType> primitives;
-extern std ::map<std ::string, ExprType> reserved_words;
+extern std::map<std::string, ExprType> primitives;
+extern std::map<std::string, ExprType> reserved_words;
 
 void REPL() {
   // read - evaluation - print loop
   Assoc global_env = empty();
   while (1) {
     printf("scm> ");
-    Syntax stx = readSyntax(std ::cin);  // read
+    Syntax stx = readSyntax(std::cin);  // read
     try {
+#ifdef DEBUG_FLAG
+      stx->show(std::cerr); // syntax print
+      std::cerr << std::endl;
+#endif
       Expr expr = stx->parse(global_env);  // parse
-      // stx -> show(std :: cout); // syntax print
       Value val = expr->eval(global_env);
       if (val->v_type == V_TERMINATE) break;
-      val->show(std ::cout);  // value print
+#ifdef DEBUG_FLAG
+      std::cerr << "\noutput> ";
+#endif
+      val->show(std::cout);  // value print
     } catch (const RuntimeError &RE) {
-      // std :: cout << RE.message();
-      std ::cout << "RuntimeError";
+#ifdef DEBUG_FLAG   
+      std::cout << RE.message();
+#else
+      std::cout << "RuntimeError";
+#endif
     }
     puts("");
   }
@@ -37,3 +46,12 @@ int main(int argc, char *argv[]) {
   REPL();
   return 0;
 }
+
+/*
+cmake --build build --target myscheme
+
+(letrec ((F (lambda (func-arg)
+              (lambda (n) (if (= n 0) 1 (* n (func-arg (- n 1)))))))) (F 10))
+
+./score.sh > test.out 2>&1
+*/

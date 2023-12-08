@@ -74,6 +74,6 @@ class SharedPtr {
 
 template <typename T, typename... Args>
 SharedPtr<T> make_shared(Args&&... args) {
-  return SharedPtr(new T(std ::forward<Args>(args)...));
+  return SharedPtr(new T(std::forward<Args>(args)...));
 }
 #endif

@@ -1,6 +1,9 @@
 #ifndef DEF_HPP
 #define DEF_HPP
 
+// DEBUGE FLAG DEFINITION
+// #define DEBUG_FLAG 1
+
 // By luke36
 
 #include <iostream>

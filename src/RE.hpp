@@ -6,11 +6,11 @@
 
 class RuntimeError : std::exception {
  private:
-  std ::string s;
+  std::string s;
 
  public:
-  RuntimeError(std ::string);
-  std ::string message() const;
+  RuntimeError(std::string);
+  std::string message() const;
 };
 
 #endif

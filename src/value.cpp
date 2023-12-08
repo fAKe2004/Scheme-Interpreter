@@ -10,6 +10,7 @@ AssocList *Assoc ::get() const { return ptr.get(); }
 
 Assoc empty() { return Assoc(nullptr); }
 
+// extend to head... 所以最后是颗树，合理。
 Assoc extend(const std::string &x, const Value &v, Assoc &lst) {
   return Assoc(new AssocList(x, v, lst));
 }
@@ -27,6 +28,15 @@ Value find(const std::string &x, Assoc &l) {
     if (x == i->x) return i->v;
   return Value(nullptr);
 }
+
+// my function
+void print_Assoc(std::ostream& os, Assoc& l) {
+  os << "Begin of Assoc\n";
+  for (auto i = l; i.get() != nullptr; i = i->next)
+    os << i->x << "\n";
+  os << "End of Assoc\n";
+}
+// end of function
 
 std::ostream &operator<<(std::ostream &os, Value &v) {
   v->show(os);
