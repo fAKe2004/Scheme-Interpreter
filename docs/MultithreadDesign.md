@@ -32,6 +32,8 @@ update : 全部求值完再 sequentially update env 就好了。 不需要这个
 
 3. var 的惰性求值部分？应该不存在并发控制问题，都是在 let/letrec/apply 过程求的，多个之间不会互相影响。
 
+4. 坑：SharePtr is not thread-safe. 把 ref_cnt 的 int 改成 atomic\<int\>。
+
 ---
 
 ### Design
