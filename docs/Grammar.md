@@ -88,11 +88,11 @@ scm> (let ([x (lambda (y) y)]) x)
 
 ```
 scm> (quote 1)
-1
+1 // Integer
 scm> (quote haha)
-haha
+haha // Symbol
 scm> (quote (1 2 3))
-(1 2 3)
+(1 2 3) // Pair
 scm> (quote #t)
 #t // 此处的 #t 是 Boolean 而非 Symbol
 ```
@@ -270,6 +270,7 @@ scm> (let ([x 1]) (fixnum? x))
 具体的机制比较复杂， 我们是这样处理的
 - 若两个操作数都是 `Integer`， 则判断两个 `Integer` 的值是否相同
 - 若两个操作数都是 `Boolean`， 判断两个 `Boolean` 的值是否相同
+- 若两个操作数都是 `Symbol`， 判断两个 `Symbol` 的值是否相同
 - 若上述两种情况都不是， 则看两个操作数指向的内存位置是否相同
 
 我们提供的接口中存的是指向值的指针而非值本身， 你可以通过定义 `Value v` 并使用 `v.get()` 来查看 `v` 指向的内存位置。
