@@ -433,12 +433,12 @@ Expr List::parse(Assoc &env) {
         stxs_mt[i] = expr_stx;
       }
 
-      std::vector<Expr> exprs = parse_mt_launch(stxs_mt, env1); // 和 let 唯一的区别就是这里 letrec : env1, let : env
+      std::vector<Expr> exprs = parse_mt_launch(stxs_mt, env1); // let env0, letrec env1
       for (int i = 0; i < m; i++)
         bind[i].second = exprs[i];
 
       Expr body = stxs[2]->parse(env1);
-      return make_expr(new Let(bind, body));
+      return make_expr(new Letrec(bind, body));
 #endif
     }
 
@@ -506,6 +506,7 @@ Expr List::parse(Assoc &env) {
  parse_function_call_lab:
 
   // interpret as procedure call, leave type check for later
+#ifndef PARALLEL_OPTIMIZE_PARSE
   Expr rator = front;
   std::vector<Expr> rand;
   for (int i = 1; i < n; i++) {
@@ -513,6 +514,14 @@ Expr List::parse(Assoc &env) {
     rand.push_back(stxs[i]->parse(env1));
   }
   return make_expr(new Apply(rator, rand));
+#else
+  Expr rator = front;
+  std::vector<Expr> rand;
+  std::vector<Syntax> stxs_mt(n - 1, Syntax(nullptr));
+  std::copy(stxs.begin() + 1, stxs.end(), stxs_mt.begin());
+  std::vector<Expr> exprs = parse_mt_launch(stxs_mt, env);
+  return make_expr(new Apply(rator, exprs));
+#endif
 }
 
 #endif
