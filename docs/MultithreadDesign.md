@@ -10,6 +10,7 @@ I. Parse Phase:
   2. begin 的 expr* 解析
   3. if 的 cond conseq alter 解析
   4. lambda 的 var* 解析，但是考虑到 var 解析复杂度很低，故不做多线程优化
+  5. binary 的 rand1, rand2 解析。
 
 II. Evaluation Phase:
   1. let/letrec 的 [var expr]* eval 部分
