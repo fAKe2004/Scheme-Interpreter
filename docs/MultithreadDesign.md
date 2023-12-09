@@ -95,3 +95,9 @@ std::vector<Value> eval_mt_launch(std::vector<Expr>& exprs, const Assoc& env) {
 #endif
 
 ```
+
+其它对于 PARSE 和 EVAL 的修改见 `parser.cpp` && `evaluation.cpp`
+
+
+---
+开启多线程优化的全局编译控制符为 PARALLEL_OPTIMIZE
