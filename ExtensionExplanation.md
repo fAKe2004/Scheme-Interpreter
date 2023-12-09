@@ -31,7 +31,7 @@ II. Evaluation Phase:
 
 update : 全部求值完再 sequentially update env 就好了。 不需要这个 env。如果有锁的话，并发效率不会比 sequential 高太多。
 
-3. var 的惰性求值部分？应该不存在并发控制问题，都是在 let/letrec/apply 过程求的，多个之间不会互相影响。
+3. var 的求值部分？应该不存在并发控制问题，都是在 let/letrec/apply 过程求的，多个之间不会互相影响。
 
 4. 坑：SharePtr is not thread-safe. 把 ref_cnt 的 int 改成 atomic\<int\>。
 
@@ -103,4 +103,5 @@ std::vector<Value> eval_mt_launch(std::vector<Expr>& exprs, const Assoc& env) {
 部分修改见 `shared.hpp`, 将 SharedPtr 改为线程安全版本。
 
 ---
+
 开启多线程优化的全局编译控制符为 PARALLEL_OPTIMIZE
