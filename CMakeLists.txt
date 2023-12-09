@@ -14,6 +14,7 @@ set(SOURCES
     ${PROJECT_SOURCE_DIR}/src/value.cpp
     ${PROJECT_SOURCE_DIR}/src/evaluation.cpp
     ${PROJECT_SOURCE_DIR}/src/Def.cpp
+    ${PROJECT_SOURCE_DIR}/src/parallel.cpp
 )
 
 add_executable(myscheme ${SOURCES})
@@ -21,4 +22,5 @@ add_executable(myscheme ${SOURCES})
 target_compile_options(myscheme
   PRIVATE
     -g
+    -pthread
 )

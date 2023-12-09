@@ -8,6 +8,8 @@
 #include "syntax.hpp"
 #include "value.hpp"
 
+#include "parallel.hpp"
+
 extern std::map<std::string, ExprType> primitives;
 extern std::map<std::string, ExprType> reserved_words;
 
@@ -32,6 +34,7 @@ Value ExprBase::eval(Assoc &env) {
 
 // End of added function
 
+#ifndef PARALLEL_OPTIMIZE_EVAL
 Value Let::eval(Assoc &env) {
   Assoc env1 = env;
   for (auto& [x, expr] : bind) {
@@ -40,11 +43,25 @@ Value Let::eval(Assoc &env) {
   }
   return body->eval(env1);
 }
+#else
+Value Let::eval(Assoc &env) {
+  int n = bind.size();
+  std::vector<Expr> exprs(n, Expr(nullptr));
+  for (int i = 0; i < n; i++)
+    exprs[i] = bind[i].second;
+  std::vector<Value> values = eval_mt_launch(exprs, env);
+  Assoc env1 = env;
+  for (int i = 0; i < n; i++)
+    env1 = extend(bind[i].first, values[i], env1);
+  return body->eval(env1);
+}
+#endif
 
 Value Lambda::eval(Assoc &env) {  
   return make_value(new Closure(x, e, env));
 }
 
+#ifndef PARALLEL_OPTIMIZE_EVAL
 Value Apply::eval(Assoc &e) {
   Assoc e1 = e;
   Value rator_v = rator->eval(e1);
@@ -65,36 +82,72 @@ Value Apply::eval(Assoc &e) {
     closure_env = extend(var_name, var_v, closure_env);
   }
   
-  // Assoc e3 = e;
-  // closure_env = merge_Assoc(closure_env, e3);
-  // print_Assoc(std::cerr, closure_env);
   return proc->e->eval(closure_env);
 }
+#else
+Value Apply::eval(Assoc &e) {
+  Assoc e1 = e;
+  Value rator_v = rator->eval(e1);
+  if (rator_v->v_type != V_PROC) {
+    throw RuntimeError("Runtime Error : attempt to apply an uncallable object");
+  }
+  Closure *proc = dynamic_cast<Closure*>(rator_v.get());
+  if (proc->parameters.size() != rand.size())
+    throw RuntimeError("Runtime Error : unmatched parameter number");
 
+  int n = rand.size();
+  Assoc closure_env = proc->env;
+
+  std::vector<Value> values = eval_mt_launch(rand, e);
+  for (int i = 0; i < n; i++) {
+    std::string var_name = proc->parameters[i];
+    closure_env = extend(var_name, values[i], closure_env);
+  }
+  
+  return proc->e->eval(closure_env);
+}
+#endif
+
+
+#ifndef PARALLEL_OPTIMIZE_EVAL
 Value Letrec::eval(Assoc &env) {
   Assoc env1 = env;
   for (auto& [x, expr] : bind)
     env1 = extend(x, Value(nullptr), env1);
   for (auto& [x, expr] : bind)
     modify(x, expr->eval(env1), env1);
-  // ... 不能改，不然闭包是错的，可能被舍弃了一些信息，modify 是好的。 TESTCASE 117
+  // ... 下方不能改，不然闭包是错的，可能被舍弃了一些信息，modify 是好的。 TESTCASE 117
   // for (auto& [x, expr] : bind) {
   //   Value v = find(x, env1);
   //   if (v->v_type == V_PROC) {
   //     Closure *proc = dynamic_cast<Closure*>(v.get());
-  //     proc->env = env1; //? 好像不用改，因为用的是 modify
+  //     proc->env = env1;
   //   }
   // }
   // print_Assoc(std::cerr, env1);
   return body->eval(env1);
 }
+#else
+Value Letrec::eval(Assoc &env) {
+  Assoc env1 = env;
+  for (auto& [x, expr] : bind)
+    env1 = extend(x, Value(nullptr), env1);
+  int n = bind.size();
+  std::vector<Expr> exprs(n, Expr(nullptr));
+  for (int i = 0; i < n; i++)
+    exprs[i] = bind[i].second;
+  std::vector<Value> values = eval_mt_launch(exprs, env1);
+  for (int i = 0; i < n; i++)
+    modify(bind[i].first, values[i], env1);
+  return body->eval(env1);
+}
+#endif
+
 
 Value Var::eval(Assoc &e) {
   Value x_v = find(x, e);
-  if (x_v.get() == nullptr) {
-    // print_Assoc(std::cerr, e);
+  if (x_v.get() == nullptr)
     throw RuntimeError("Runtime Error: varible not found");
-  }
   return x_v;
 }
 
@@ -140,9 +193,9 @@ Value quote_syntax_interpret(const Syntax& stx, Assoc& env) {
   if (Number *num = dynamic_cast<Number*>(stx.get())) 
     return make_value(new Integer(num->n));
   if (TrueSyntax *ts = dynamic_cast<TrueSyntax*>(stx.get()))
-    return make_value(new Boolean(false));
-  if (FalseSyntax *fs = dynamic_cast<FalseSyntax*>(stx.get()))
     return make_value(new Boolean(true));
+  if (FalseSyntax *fs = dynamic_cast<FalseSyntax*>(stx.get()))
+    return make_value(new Boolean(false));
   if (Identifier *idf = dynamic_cast<Identifier*>(stx.get())) {
     return make_value(new Symbol(idf->s));
   }
@@ -168,11 +221,19 @@ Value Exit::eval(Assoc &e) {
   return make_value(new Terminate());
 }
 
+#ifndef PARALLEL_OPTIMIZE_EVAL
 Value Binary::eval(Assoc &e) { // 吐槽一下，为什么不直接一路 Eval 继承到底呢，而要搞出个 evalRator
   Assoc e1 = e, e2 = e;
   Value v1 = rand1->eval(e1), v2 = rand2->eval(e2);
   return evalRator(v1, v2);
 }
+#else
+Value Binary::eval(Assoc &e) {
+  std::vector<Expr> exprs({rand1, rand2});
+  std::vector<Value> values = eval_mt_launch(exprs, e);
+  return evalRator(values[0], values[1]);
+}
+#endif
 
 
 Value Unary::eval(Assoc &e) {
@@ -254,7 +315,11 @@ Value IsEq::evalRator(const Value &rand1, const Value &rand2) {
     Boolean *v1 = dynamic_cast<Boolean*>(rand1.get()), 
       *v2 = dynamic_cast<Boolean*>(rand2.get());
     return make_value(new Boolean(v1->b == v2->b));
-  } else
+  } else if (rand1->v_type == V_SYM && rand2->v_type == V_SYM) {
+    Symbol*v1 = dynamic_cast<Symbol*>(rand1.get()), 
+    *v2 = dynamic_cast<Symbol*>(rand2.get());  
+    return make_value(new Boolean(v1->s == v2->s));
+  }
     return make_value(new Boolean(rand1.get() == rand2.get()));
 }
 

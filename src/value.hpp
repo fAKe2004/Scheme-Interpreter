@@ -114,7 +114,5 @@ void modify(const std ::string &, const Value &, Assoc &);
 Value find(const std::string &, Assoc &);
 // my function
 void print_Assoc(std::ostream& os, Assoc& l);
-// merge l1 to the head of l2, l1 has higher priority (l1, l2 are not changed)
-Assoc merge_Assoc(Assoc& l1, Assoc& l2);
 // end of my function
 #endif

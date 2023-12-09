@@ -4,6 +4,14 @@
 // DEBUGE FLAG DEFINITION
 // #define DEBUG_FLAG 1
 
+// MUTLTI THREAD OPTIMITZATION
+// #define PARALLEL_OPTIMIZE 1
+
+#ifdef PARALLEL_OPTIMIZE
+// #define PARALLEL_OPTIMIZE_PASRSE 1
+#define PARALLEL_OPTIMIZE_EVAL 1
+#endif
+
 // By luke36
 
 #include <iostream>

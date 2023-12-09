@@ -18,7 +18,9 @@
 #include <functional>
 
 #include "value.hpp"
+#include "parallel.hpp"
 
+// palce holder for exsiting varibles
 Value env_place_holder = IntegerV(1);
 // END OF ADDED
 
@@ -94,6 +96,22 @@ Expr TrueSyntax::parse(Assoc &env) { return make_expr(new True()); }
 
 Expr FalseSyntax::parse(Assoc &env) { return make_expr(new False()); }
 
+// ADDED FUNCTION
+std::pair<Expr, Expr> parse_binary(Syntax& stx1, Syntax& stx2, Assoc& env) {
+#ifndef PARALLEL_OPTIMIZE_PARSE
+  Assoc env1 = env, env2 = env;
+  return std::make_pair(stx1.parse(env1), stx2.parse(env2));
+#else
+  std::vector<Syntax> stxs_mt({stx1, stx2});
+  std::vector<Expr> exprs = parse_mt_launch(stxs_mt, env);
+  return std::make_pair(exprs[0], exprs[1]);
+#endif
+}
+
+
+
+// END OF ADDED FUNCTION
+
 Expr List::parse(Assoc &env) {
   if (stxs.empty())
     return Expr(static_cast<ExprBase *>(new Quote(new List()))); // equ Null
@@ -122,57 +140,57 @@ Expr List::parse(Assoc &env) {
 
     case E_MUL: {  // Remark: Expr 类型检查留给 EVAL 吧，好写点。
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env, env2 = env;
-      Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
+      Expr first(nullptr), second(nullptr);
+      std::tie(first, second) = parse_binary(stxs[1], stxs[2], env);
       return make_expr(new Mult(first, second));
     }
 
     case E_MINUS: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env, env2 = env;
-      Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
+      Expr first(nullptr), second(nullptr);
+      std::tie(first, second) = parse_binary(stxs[1], stxs[2], env);
       return make_expr(new Minus(first, second));
     }
 
     case E_PLUS: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env, env2 = env;
-      Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
+      Expr first(nullptr), second(nullptr);
+      std::tie(first, second) = parse_binary(stxs[1], stxs[2], env);
       return make_expr(new Plus(first, second));
     }
 
     case E_LT: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env, env2 = env;
-      Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
+      Expr first(nullptr), second(nullptr);
+      std::tie(first, second) = parse_binary(stxs[1], stxs[2], env);
       return make_expr(new Less(first, second));
     }
 
     case E_LE: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env, env2 = env;
-      Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
+      Expr first(nullptr), second(nullptr);
+      std::tie(first, second) = parse_binary(stxs[1], stxs[2], env);
       return make_expr(new LessEq(first, second));
     }
 
     case E_EQ: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env, env2 = env;
-      Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
+      Expr first(nullptr), second(nullptr);
+      std::tie(first, second) = parse_binary(stxs[1], stxs[2], env);
       return make_expr(new Equal(first, second));
     }
 
     case E_GE: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env, env2 = env;
-      Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
+      Expr first(nullptr), second(nullptr);
+      std::tie(first, second) = parse_binary(stxs[1], stxs[2], env);
       return make_expr(new GreaterEq(first, second));
     }
 
     case E_GT: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env, env2 = env;
-      Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
+      Expr first(nullptr), second(nullptr);
+      std::tie(first, second) = parse_binary(stxs[1], stxs[2], env);
       return make_expr(new Greater(first, second));
     }
 
@@ -183,8 +201,8 @@ Expr List::parse(Assoc &env) {
 
     case E_EQQ: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env, env2 = env;
-      Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
+      Expr first(nullptr), second(nullptr);
+      std::tie(first, second) = parse_binary(stxs[1], stxs[2], env);
       return make_expr(new IsEq(first, second));
     }
 
@@ -233,8 +251,8 @@ Expr List::parse(Assoc &env) {
 
     case E_CONS: {
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
-      Assoc env1 = env, env2 = env;
-      Expr first = stxs[1].parse(env1), second = stxs[2].parse(env2);
+      Expr first(nullptr), second(nullptr);
+      std::tie(first, second) = parse_binary(stxs[1], stxs[2], env);
       return make_expr(new Cons(first, second));
     }
 
@@ -270,7 +288,7 @@ Expr List::parse(Assoc &env) {
       if (dynamic_cast<Let*>(front.get()) != nullptr)
         break; // function call, not real let
       */
-
+#ifndef PARALLEL_OPTIMIZE_PARSE
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
       
       List* var_list = dynamic_cast<List*>(stxs[1].get());
@@ -293,6 +311,41 @@ Expr List::parse(Assoc &env) {
       Expr body = stxs[2]->parse(env1);
 
       return make_expr(new Let(bind, body));
+#else
+      if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
+      
+      List* var_list = dynamic_cast<List*>(stxs[1].get());
+      if (var_list == nullptr)
+        throw RuntimeError("Syntax Error: let (var*) is not a List ");
+
+
+      int m = var_list->stxs.size();
+      Assoc env1 = env;
+      std::vector<std::pair<std::string, Expr>> bind(m, std::make_pair(std::string(), Expr(nullptr)));
+      
+      std::vector<Syntax> stxs_mt(m, Syntax(nullptr));
+
+      for (int i = 0; i < m; i++) {
+        Syntax& stx = var_list->stxs[i];
+        List *xy = dynamic_cast<List*>(stx.get());
+        if (xy == nullptr || xy->stxs.size() != 2)
+          throw RuntimeError("Syntax Error: let var not in form of [x y]");
+
+        Syntax var_stx = xy->stxs[0], expr_stx = xy->stxs[1];
+        var_cast(var_stx, env1); // var_cast guarantees var_stx is a valid var identifier
+        std::string var_name = dynamic_cast<Identifier*>(var_stx.get())->s;
+        bind[i].first = var_name;
+
+        stxs_mt[i] = expr_stx;
+      }
+
+      std::vector<Expr> exprs = parse_mt_launch(stxs_mt, env);
+      for (int i = 0; i < m; i++)
+        bind[i].second = exprs[i];
+
+      Expr body = stxs[2]->parse(env1);
+      return make_expr(new Let(bind, body));
+#endif
     }
 
     case E_LAMBDA: {
@@ -324,7 +377,7 @@ Expr List::parse(Assoc &env) {
       if (dynamic_cast<Letrec*>(front.get()) != nullptr)
         break;
       */
-
+#ifndef PARALLEL_OPTIMIZE_PARSE
       // 把获取变量和变量对应的 expr 解析分开就行
       if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
       
@@ -337,7 +390,7 @@ Expr List::parse(Assoc &env) {
       for (auto& stx : var_list->stxs) { // parse var* | add var to env only
         List *xy = dynamic_cast<List*>(stx.get());
         if (xy == nullptr || xy->stxs.size() != 2)
-          throw RuntimeError("Syntax Error: let var not in form of [x y]");
+          throw RuntimeError("Syntax Error: letrec var not in form of [x y]");
         Syntax var_stx = xy->stxs[0];
         var_cast(var_stx, env1); // var_cast guarantees var_stx is a valid var identifier
       }
@@ -352,6 +405,41 @@ Expr List::parse(Assoc &env) {
       
       Expr body = stxs[2]->parse(env1);
       return make_expr(new Letrec(bind, body));
+#else
+      if (n != 3) throw RuntimeError("Syntax Error: List::parse wrong number of args");
+      
+      List* var_list = dynamic_cast<List*>(stxs[1].get());
+      if (var_list == nullptr)
+        throw RuntimeError("Syntax Error: letrec (var*) is not a List ");
+
+
+      int m = var_list->stxs.size();
+      Assoc env1 = env;
+      std::vector<std::pair<std::string, Expr>> bind(m, std::make_pair(std::string(), Expr(nullptr)));
+      
+      std::vector<Syntax> stxs_mt(m, Syntax(nullptr));
+
+      for (int i = 0; i < m; i++) {
+        Syntax& stx = var_list->stxs[i];
+        List *xy = dynamic_cast<List*>(stx.get());
+        if (xy == nullptr || xy->stxs.size() != 2)
+          throw RuntimeError("Syntax Error: letrec var not in form of [x y]");
+
+        Syntax var_stx = xy->stxs[0], expr_stx = xy->stxs[1];
+        var_cast(var_stx, env1); // var_cast guarantees var_stx is a valid var identifier
+        std::string var_name = dynamic_cast<Identifier*>(var_stx.get())->s;
+        bind[i].first = var_name;
+
+        stxs_mt[i] = expr_stx;
+      }
+
+      std::vector<Expr> exprs = parse_mt_launch(stxs_mt, env1); // 和 let 唯一的区别就是这里 letrec : env1, let : env
+      for (int i = 0; i < m; i++)
+        bind[i].second = exprs[i];
+
+      Expr body = stxs[2]->parse(env1);
+      return make_expr(new Let(bind, body));
+#endif
     }
 
     case E_IF: {
@@ -360,11 +448,18 @@ Expr List::parse(Assoc &env) {
         break;
       */
 
+#ifndef PARALLEL_OPTIMIZE_PARSE
       if (n != 4) throw RuntimeError("Syntax Error: List::parse wrong number of args");
       Assoc env1 = env, env2 = env, env3 = env;
       Syntax cond_stx = stxs[1], conseq_stx = stxs[2], alter_stx = stxs[3];
       Expr cond = cond_stx.parse(env1), conseq = conseq_stx.parse(env2), alter = alter_stx.parse(env3);
       return make_expr(new If(cond, conseq, alter));
+#else
+      if (n != 4) throw RuntimeError("Syntax Error: List::parse wrong number of args");
+      std::vector<Syntax> stxs_mt({stxs[1], stxs[2], stxs[3]});
+      std::vector<Expr> exprs = parse_mt_launch(stxs_mt, env);
+      return make_expr(new If(exprs[0], exprs[1], exprs[2]));
+#endif
     }
 
     case E_BEGIN: {
@@ -372,7 +467,7 @@ Expr List::parse(Assoc &env) {
       if (dynamic_cast<Begin*>(front.get()) != nullptr)
         break;
       */
-
+#ifndef PARALLEL_OPTIMIZE_PARSE
       if (n < 2) throw RuntimeError("Syntax Error: List::parse wrong number of args");
 
       std::vector<Expr> es;
@@ -383,6 +478,12 @@ Expr List::parse(Assoc &env) {
       }
 
       return make_expr(new Begin(es));
+#else
+      std::vector<Syntax> stxs_mt(n - 1, Syntax(nullptr));
+      std::copy(stxs.begin() + 1, stxs.end(), stxs_mt.begin());
+      std::vector<Expr> exprs = parse_mt_launch(stxs_mt, env);
+      return make_expr(new Begin(exprs));
+#endif
     }
 
     case E_QUOTE: {
