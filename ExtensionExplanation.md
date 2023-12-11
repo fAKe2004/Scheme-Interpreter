@@ -119,7 +119,7 @@ PARALLEL_OPTIMIZE_EVAL
 
 具体实现主要见 evalutation.cpp
 
---
+---
 开启惰性求值的全局编译控制符为 LAZYEVAL_OPTIMIZE
 
 LAZYEVAL_OPTIMIZE 和 PARALLEL_OPTIMIZE_EVAL 冲突，不能同时开启(见 Def.hpp static_assert)
