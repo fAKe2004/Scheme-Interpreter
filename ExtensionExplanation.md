@@ -117,7 +117,7 @@ PARALLEL_OPTIMIZE_EVAL
 2. 在 evaluation 阶段，遇到需要添加变量时，不直接求值，而是放入 LazyValue
 3. 对于 Var::eval(e)，获取到 x 对应的 v 时，若 v 类型为 LazyValue，则根据 v 的 expr 和 env 求值，并 modify 当前 x 在目前 e 内的值(Step 3 的做法实现了记忆化)
 
-具体实现主要见 evalutation.cpp
+具体实现主要见 evaluation.cpp
 
 ---
 开启惰性求值的全局编译控制符为 LAZYEVAL_OPTIMIZE
