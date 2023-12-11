@@ -1,16 +1,28 @@
 #ifndef DEF_HPP
 #define DEF_HPP
 
+// COMPILE CONTROL FLAGS
+
 // DEBUGE FLAG DEFINITION
 // #define DEBUG_FLAG 1
 
 // MUTLTI THREAD OPTIMITZATION
-#define PARALLEL_OPTIMIZE 1
+// #define PARALLEL_OPTIMIZE 1
 
 #ifdef PARALLEL_OPTIMIZE
 #define PARALLEL_OPTIMIZE_PARSE 1
 #define PARALLEL_OPTIMIZE_EVAL 1
 #endif
+
+// LAZYEVAL OPTIMIZATION
+#define LAZYEVAL_OPTIMIZE 1
+
+#ifdef LAZYEVAL_OPTIMIZE
+#ifdef PARALLEL_OPTIMIZE_EVAL 
+static_assert(false, "lazy eval and parrallel eval are not compatible.");
+#endif
+#endif
+
 
 // By luke36
 
@@ -61,6 +73,9 @@ enum ExprType {
   E_EXIT
 };
 enum ValueType {
+#ifdef LAZYEVAL_OPTIMIZE
+  V_LAZYEVAL,
+#endif
   V_INT,
   V_BOOL,
   V_SYM,

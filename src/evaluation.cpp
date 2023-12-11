@@ -38,8 +38,12 @@ Value ExprBase::eval(Assoc &env) {
 Value Let::eval(Assoc &env) {
   Assoc env1 = env;
   for (auto& [x, expr] : bind) {
+#ifndef LAZYEVAL_OPTIMIZE
     Assoc env2 = env;
     env1 = extend(x, expr->eval(env2), env1);
+#else
+    env1 = extend(x, make_value(new LazyEval(expr, env)), env1);
+#endif
   }
   return body->eval(env1);
 }
@@ -76,13 +80,18 @@ Value Apply::eval(Assoc &e) {
   Assoc closure_env = proc->env;
   // ? 应该把 closure_env 和 外部 env 合并起来？
   for (int i = 0; i < n; i++) {
+#ifndef LAZYEVAL_OPTIMIZE
     Assoc e2 = e;
     std::string var_name = proc->parameters[i];
     Value var_v = rand[i]->eval(e2);
     closure_env = extend(var_name, var_v, closure_env);
+#else 
+    std::string var_name = proc->parameters[i];
+    Value var_v = make_value(new LazyEval(rand[i], e));
+    closure_env = extend(var_name, var_v, closure_env);
+#endif
   }
-  
-  return proc->e->eval(closure_env);
+    return proc->e->eval(closure_env);
 }
 #else
 Value Apply::eval(Assoc &e) {
@@ -114,8 +123,13 @@ Value Letrec::eval(Assoc &env) {
   Assoc env1 = env;
   for (auto& [x, expr] : bind)
     env1 = extend(x, Value(nullptr), env1);
-  for (auto& [x, expr] : bind)
+  for (auto& [x, expr] : bind) {
+#ifndef LAZYEVAL_OPTIMIZE
     modify(x, expr->eval(env1), env1);
+#else
+    modify(x, make_value(new LazyEval(expr, env1)), env1);
+#endif 
+  }
   // ... 下方不能改，不然闭包是错的，可能被舍弃了一些信息，modify 是好的。 TESTCASE 117
   // for (auto& [x, expr] : bind) {
   //   Value v = find(x, env1);
@@ -148,7 +162,16 @@ Value Var::eval(Assoc &e) {
   Value x_v = find(x, e);
   if (x_v.get() == nullptr)
     throw RuntimeError("Runtime Error: varible not found");
+#ifndef LAZYEVAL_OPTIMIZE
   return x_v;
+#else
+  if (LazyEval *lz = dynamic_cast<LazyEval*>(x_v.get()))  {
+    Value result = lz->eval();
+    modify(x, result, e);
+    x_v = result;
+  }
+  return x_v;
+#endif
 }
 
 Value Fixnum::eval(Assoc &e) {
@@ -172,12 +195,17 @@ Value False::eval(Assoc &e) {
 }
 
 Value Begin::eval(Assoc &e) {
+#ifndef PARALLEL_OPTIMIZE_EVAL
   Value result(nullptr);
   for (auto& expr : es) {
     Assoc e1 = e;
     result = expr->eval(e1);
   }
   return result;
+#else
+  std::vector<Value> values = eval_mt_launch(expr, e);
+  return values.back();
+#endif
 }
 
 // Value syntaxToValue(const Syntax &syntax) {

@@ -1,4 +1,5 @@
 #include "value.hpp"
+#include "RE.hpp"
 
 AssocList::AssocList(const std::string &x, const Value &v, Assoc &next)
     : x(x), v(v), next(next) {}
@@ -119,3 +120,12 @@ Value ClosureV(const std::vector<std::string> &xs, const Expr &e,
                const Assoc &env) {
   return Value(new Closure(xs, e, env));
 }
+
+#ifdef LAZYEVAL_OPTIMIZE
+LazyEval::LazyEval(const Expr& expr, const Assoc& env) 
+  : ValueBase(V_LAZYEVAL), expr(expr), env(env) {}
+Value LazyEval::eval() { return expr->eval(env); } 
+void LazyEval::show(std::ostream &os) {
+  throw RuntimeError("Internal Error : attempt to show LazyEval");
+}
+#endif

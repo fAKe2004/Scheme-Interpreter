@@ -99,12 +99,16 @@ struct Closure : ValueBase {
 };
 Value ClosureV(const std::vector<std::string> &, const Expr &, const Assoc &);
 
-struct String : ValueBase {
-  std ::string s;
-  String(const std ::string &);
-  virtual void show(std ::ostream &) override;
+#ifdef LAZYEVAL_OPTIMIZE
+struct LazyEval : ValueBase {
+  Expr expr;
+  Assoc env;
+  Value eval();
+  LazyEval(const Expr&, const Assoc&);
+  virtual void show(std::ostream &) override;
 };
-Value StringV(const std ::string &);
+#endif
+
 
 std::ostream &operator<<(std::ostream &, Value &);
 

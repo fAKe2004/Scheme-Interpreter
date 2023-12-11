@@ -1,4 +1,4 @@
-# 多线程优化设计说明
+# Extension 1 多线程优化设计说明
 
 Yuxuan Wang
 ---
@@ -105,3 +105,23 @@ std::vector<Value> eval_mt_launch(std::vector<Expr>& exprs, const Assoc& env) {
 ---
 
 开启多线程优化的全局编译控制符为 PARALLEL_OPTIMIZE
+
+细分控制符还有 
+PARALLEL_OPTIMIZE_PARSE
+PARALLEL_OPTIMIZE_EVAL
+
+---
+# Extension 2 惰性求值优化设计说明
+
+1. 增加 LazyEval : ValueBase 类，存储 Expr expr 和 Env env
+2. 在 evaluation 阶段，遇到需要添加变量时，不直接求值，而是放入 LazyValue
+3. 对于 Var::eval(e)，获取到 x 对应的 v 时，若 v 类型为 LazyValue，则根据 v 的 expr 和 env 求值，并 modify 当前 x 在目前 e 内的值(Step 3 的做法实现了记忆化)
+
+具体实现主要见 evalutation.cpp
+
+--
+开启惰性求值的全局编译控制符为 LAZYEVAL_OPTIMIZE
+
+LAZYEVAL_OPTIMIZE 和 PARALLEL_OPTIMIZE_EVAL 冲突，不能同时开启(见 Def.hpp static_assert)
+
+

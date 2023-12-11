@@ -75,7 +75,7 @@ Expr Identifier::parse(Assoc &env) {
   // if (s == "#f")
   //   return make_expr(new False());
 
-  if (find(s, env).get() != nullptr)  // existing var .. 好像不能这么判断，咋整，因为找不到和没赋值的变量都是 nullptr 规定存在但为求值得变量为 env_place_holder 吧，反正 parse 阶段 env 值也不重要
+  if (find(s, env).get() != nullptr)  // existing var .. 好像不能这么判断，咋整，因为找不到和没赋值的变量都是 nullptr 规定存在但未求值得变量为 env_place_holder 吧，反正 parse 阶段 env 值也不重要
     return make_expr(new Var(s));
 
   if (primitives.find(s) != primitives.end())  // primitives
