@@ -122,6 +122,8 @@ PARALLEL_OPTIMIZE_EVAL
 ---
 开启惰性求值的全局编译控制符为 LAZYEVAL_OPTIMIZE
 
-LAZYEVAL_OPTIMIZE 和 PARALLEL_OPTIMIZE_EVAL 冲突，不能同时开启(见 Def.hpp static_assert)
+--LAZYEVAL_OPTIMIZE 和 PARALLEL_OPTIMIZE_EVAL 冲突，不能同时开启(见 Def.hpp static_assert)--
+
+好像冲突关系也不大，开就开吧...
 
 
