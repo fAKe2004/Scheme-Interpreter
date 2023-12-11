@@ -30,6 +30,7 @@ Value make_value(Drived_Value *ptr) {
 
 Value ExprBase::eval(Assoc &env) {
   throw RuntimeError("Internal Error: try to evaluate an ExprBase");
+  // 也有可能 input = let 这样的只有一个关键字但不在 () 内的情况...严格来说不一定 Internal Error... 反正确实是 RuntimeError，之前还没考虑到只有一个 Identifier 不在 List 内的情况, 歪打正着了……
 }
 
 // End of added function
@@ -203,7 +204,7 @@ Value Begin::eval(Assoc &e) {
   }
   return result;
 #else
-  std::vector<Value> values = eval_mt_launch(expr, e);
+  std::vector<Value> values = eval_mt_launch(es, e);
   return values.back();
 #endif
 }

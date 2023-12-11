@@ -21,7 +21,7 @@
 #include "parallel.hpp"
 
 // palce holder for exsiting varibles
-Value env_place_holder = IntegerV(1);
+Value env_placeholder = SymbolV("env_placeholder");
 // END OF ADDED
 
 #define mp make_pair
@@ -58,7 +58,7 @@ void var_cast(const Syntax &stx, Assoc &env) {
   Identifier *stx_ptr = dynamic_cast<Identifier *>(stx.get());
   if (stx_ptr == nullptr || !var_name_check(stx_ptr->s))
     throw RuntimeError("Syntax Error: invaild varible");
-  env = extend(stx_ptr->s, env_place_holder, env);
+  env = extend(stx_ptr->s, env_placeholder, env);
   // return make_expr(new Var(stx_ptr->s));
   return void();
 }
@@ -75,7 +75,7 @@ Expr Identifier::parse(Assoc &env) {
   // if (s == "#f")
   //   return make_expr(new False());
 
-  if (find(s, env).get() != nullptr)  // existing var .. 好像不能这么判断，咋整，因为找不到和没赋值的变量都是 nullptr 规定存在但未求值得变量为 env_place_holder 吧，反正 parse 阶段 env 值也不重要
+  if (find(s, env).get() != nullptr)  // existing var .. 好像不能这么判断，咋整，因为找不到和没赋值的变量都是 nullptr 规定存在但未求值得变量为 env_placeholder 吧，反正 parse 阶段 env 值也不重要
     return make_expr(new Var(s));
 
   if (primitives.find(s) != primitives.end())  // primitives
@@ -88,7 +88,7 @@ Expr Identifier::parse(Assoc &env) {
   if (!var_name_check(s))
     throw RuntimeError("Syntax Error: invalid varible");
 
-  env = extend(s, env_place_holder, env);  // new var
+  env = extend(s, env_placeholder, env);  // new var
   return make_expr(new Var(s));
 }
 
