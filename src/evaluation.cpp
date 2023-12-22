@@ -120,17 +120,23 @@ Value Apply::eval(Assoc &e) {
 
 
 #ifndef PARALLEL_OPTIMIZE_EVAL
+
 Value Letrec::eval(Assoc &env) {
   Assoc env1 = env;
   for (auto& [x, expr] : bind)
     env1 = extend(x, Value(nullptr), env1);
+  std::vector<std::pair<std::string, Value>> values_bind;
   for (auto& [x, expr] : bind) {
-#ifndef LAZYEVAL_OPTIMIZE
-    modify(x, expr->eval(env1), env1);
-#else
-    modify(x, make_value(new LazyEval(expr, env1)), env1);
-#endif 
+    Assoc env2 = env1;
+// #ifndef LAZYEVAL_OPTIMIZE
+// 爬吧，letrec 不允许 lazy eval  不然有一大堆问题 删了
+    values_bind.push_back(std::make_pair(x, expr->eval(env2)));
+// #else
+//     values.push_back(std::make_pair(x, make_value(new LazyEval(expr, env2))));
+// #endif 
   }
+  for (auto& [x, value] : values_bind)
+    modify(x, value, env1);
   // ... 下方不能改，不然闭包是错的，可能被舍弃了一些信息，modify 是好的。 TESTCASE 117
   // for (auto& [x, expr] : bind) {
   //   Value v = find(x, env1);
